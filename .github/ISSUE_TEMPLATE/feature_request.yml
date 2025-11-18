@@ -1,0 +1,44 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for the extension.
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎯 Feature Request Template
+
+        Thank you for suggesting a new idea! Please complete the sections below to describe your feature clearly.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Description
+      description: What is the feature? What problem does it solve?
+      placeholder: Describe the context and what's missing or needs improvement.
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 🎯 Goal
+      description: What should be achieved when this feature is implemented?
+      placeholder: E.g. "Ensure the decorators have enough contrast in both dark and light mode."
+
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: 🧠 Difficulty
+      description: How complex do you think this task is?
+      options:
+        - 🟢 Easy – Suitable for first-time contributors
+        - 🟡 Medium – Requires some experience with VSCode extensions
+        - 🔴 Hard – Might involve deeper architectural decisions
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 📎 Additional Context
+      description: Anything else that helps understanding the feature (mockups, screenshots, links).
+      placeholder: Optional but helpful!

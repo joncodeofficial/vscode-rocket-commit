@@ -1,0 +1,24 @@
+.vscode/**
+.vscode-test/**
+src/**
+.gitignore
+.yarnrc
+vsc-extension-quickstart.md
+**/tsconfig.json
+**/eslint.config.mjs
+**/*.map
+**/*.ts
+**/.vscode-test.*
+
+# Ignorar tests de TypeScript
+src/test/**
+src/types/**
+
+# Ignorar tests compilados
+dist/test/**
+dist/types/**
+**/images/presentation.gif
+**/commitlint.config.js
+**/.releaserc.json
+**/.prettierignore
+**/semantic.log
