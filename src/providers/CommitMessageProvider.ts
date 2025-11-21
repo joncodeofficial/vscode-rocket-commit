@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { generateCommit } from '../services/modelService.mjs';
-import { getStagedDiff } from '../services/gitService.mjs';
+import { generateCommit } from '../services/modelService.js';
+import { getStagedDiff } from '../services/gitService.js';
 
 export class CommitMessageProvider {
   async provideValue(

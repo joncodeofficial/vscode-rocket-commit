@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { getLlama, LlamaContext, LlamaModel, LlamaCompletion } from 'node-llama-cpp';
-import { createWriteStream, existsSync, mkdirSync } from 'fs';
-import { MODEL_URL, MODEL_CONFIG, MODEL_NAME } from '../constants/config.mjs';
+import { existsSync } from 'fs';
+import { MODEL_URL, MODEL_CONFIG, MODEL_NAME } from '../constants/config.js';
 import { downloadModelWithProgress } from '../utils/download.mjs';
 
 let model: LlamaModel | null = null;
@@ -61,9 +61,9 @@ export async function ask(question: string): Promise<string> {
 export async function generateCommit(diff: string): Promise<string> {
   if (!contextSequence || !model) throw new Error('Modelo no inicializado');
 
-  const { prompt, addedLines, removedLines } = await import('../utils/promptBuilder.mjs').then(
-    (m) => m.buildCommitPrompt(diff)
-  );
+  const { prompt, addedLines, removedLines, changeType } = await import(
+    '../utils/promptBuilder.mjs'
+  ).then((m) => m.buildCommitPrompt(diff));
 
   console.log('[LibreCommit] Prompt enviado al modelo:');
 
@@ -78,7 +78,7 @@ export async function generateCommit(diff: string): Promise<string> {
   console.log('[LibreCommit] Respuesta raw del modelo:', message);
 
   const { processCommitMessage } = await import('../utils/commitProcessor.mjs');
-  const cleaned = await processCommitMessage(message, diff, addedLines, removedLines);
+  const cleaned = await processCommitMessage(message, diff, addedLines, removedLines, changeType);
 
   return cleaned;
 }

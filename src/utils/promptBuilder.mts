@@ -1,9 +1,10 @@
-import { DIFF_CONFIG } from '../constants/config.mjs';
+import { DIFF_CONFIG } from '../constants/config.js';
 
 export function buildCommitPrompt(diff: string): {
   prompt: string;
   addedLines: string[];
   removedLines: string[];
+  changeType: string;
 } {
   const diffLines = diff.split('\n');
 
@@ -21,11 +22,26 @@ export function buildCommitPrompt(diff: string): {
       !line.startsWith('+++') &&
       !line.startsWith('---')
     ) {
-      relevantLines.push(line);
-      if (line.startsWith('+')) {
-        addedLines.push(line);
-      } else if (line.startsWith('-')) {
-        removedLines.push(line);
+      const trimmedLine = line.substring(1).trim();
+
+      // Filtrar ruido: líneas vacías, brackets solos, comentarios simples
+      const isNoise =
+        trimmedLine === '' ||
+        trimmedLine === '{' ||
+        trimmedLine === '}' ||
+        trimmedLine === '};' ||
+        trimmedLine === ');' ||
+        trimmedLine === '(' ||
+        trimmedLine.match(/^\/\/\s*$/) || // Solo "//"
+        trimmedLine.match(/^\/\/\s{0,3}$/); // "//   "
+
+      if (!isNoise) {
+        relevantLines.push(line);
+        if (line.startsWith('+')) {
+          addedLines.push(line);
+        } else if (line.startsWith('-')) {
+          removedLines.push(line);
+        }
       }
     }
   }
@@ -60,12 +76,32 @@ export function buildCommitPrompt(diff: string): {
       ? compactDiff.substring(0, DIFF_CONFIG.maxDiffLength) + '\n...(more changes)'
       : compactDiff;
 
-  const changeType =
-    addedLines.length > removedLines.length
-      ? 'added'
-      : removedLines.length > addedLines.length
-        ? 'removed'
-        : 'modified';
+  // Detectar si se está descomentando código (restaurando funcionalidad)
+  const isUncommenting =
+    removedLines.some((line) => line.trim().startsWith('-//')) &&
+    addedLines.some((line) => !line.trim().startsWith('+//'));
+
+  // Detectar refactorización (código viejo comentado + nuevo código + nuevos imports)
+  const hasCommentedOldCode = addedLines.some(
+    (l) => l.includes('// import') || l.includes('// const') || l.includes('// function')
+  );
+  const hasNewImports = addedLines.some((l) => l.includes('+import') || l.includes('+ import'));
+  const hasFunctionRewrite = addedLines.length > 10 && removedLines.length > 10;
+
+  let changeType = 'modified';
+
+  if (isUncommenting) {
+    changeType = 'restored';
+    console.log('[LibreCommit] 🔍 Detected UNCOMMENT pattern - changeType=restored');
+  } else if (hasCommentedOldCode && hasNewImports && hasFunctionRewrite) {
+    changeType = 'refactor';
+  } else if (addedLines.length > removedLines.length * 2) {
+    changeType = 'added';
+  } else if (removedLines.length > addedLines.length * 2) {
+    changeType = 'removed';
+  }
+
+  console.log('[LibreCommit] 🎯 Final changeType:', changeType);
 
   const prompt = `You are a commit message generator. Write descriptive conventional commit messages between 7-12 words.
 
@@ -109,6 +145,13 @@ diff --git a/src/api/users.ts b/src/api/users.ts
 +  }
 commit: feat: add async function to fetch user data by id
 
+diff --git a/src/services/viewer.ts b/src/services/viewer.ts
+-// export async function loadModelViewable(
+-//   viewer: Autodesk.Viewing.Viewer3D,
++export async function loadModelViewable(
++  viewer: Autodesk.Viewing.Viewer3D,
+commit: fix: restore loadModelViewable function for caching documents
+
 Now generate a commit for this diff (${changeType}):
 
 Files: ${fileSummary}
@@ -121,5 +164,5 @@ commit:`;
   console.log('[LibreCommit] Diff truncado (primeros 500 chars):', truncatedDiff.substring(0, 500));
   console.log('[LibreCommit] Files detectados:', fileChanges);
 
-  return { prompt, addedLines, removedLines };
+  return { prompt, addedLines, removedLines, changeType };
 }

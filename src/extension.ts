@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import path from 'path';
-import { initModel } from './services/modelService.mjs';
-import { startServer, stopServer } from './services/httpServer.mjs';
-import { MODEL_FILENAME } from './constants/config.mjs';
-import { handleGenerateCommit } from './commands/generateCommitCommand.mjs';
+import { initModel } from './services/modelService.js';
+import { startServer, stopServer } from './services/httpServer.js';
+import { MODEL_FILENAME } from './constants/config.js';
+import { handleGenerateCommit } from './commands/generateCommitCommand.js';
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('[LibreCommit] Activando extensión...');

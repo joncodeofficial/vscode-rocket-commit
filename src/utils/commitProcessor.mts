@@ -1,24 +1,110 @@
-import { WORD_COUNT_LIMITS } from '../constants/config.mjs';
+import { WORD_COUNT_LIMITS } from '../constants/config.js';
 
 export async function processCommitMessage(
   rawMessage: string,
   diff: string,
   addedLines: string[],
-  removedLines: string[]
+  removedLines: string[],
+  detectedChangeType?: string
 ): Promise<string> {
   let cleaned = rawMessage.trim();
 
+  // Limpiar basura que el modelo a veces genera
   const messageLines = cleaned.split('\n');
   cleaned = messageLines[0].trim();
 
+  // Filtrar líneas que son claramente basura (git hashes, metadata, etc.)
+  const isGarbage =
+    cleaned.includes('---') ||
+    cleaned.includes('REVIEW') ||
+    cleaned.includes('COMMIT MESSAGE') ||
+    cleaned.includes('Look at') ||
+    cleaned.includes('Author:') ||
+    cleaned.includes('Date:') ||
+    cleaned.includes('author:') ||
+    cleaned.includes('date:') ||
+    cleaned.includes('message:') ||
+    cleaned.startsWith('"type:') ||
+    cleaned.startsWith('[type]') ||
+    cleaned === 'commit:' ||
+    /^[0-9a-f]{40}/.test(cleaned) || // SHA1 hash completo
+    /^[0-9a-f]{32,40}/.test(cleaned); // SHA parcial
+
+  if (isGarbage) {
+    // Buscar la primera línea válida
+    for (const line of messageLines) {
+      const trimmed = line.trim();
+
+      // Validar que sea un commit válido o al menos texto útil
+      if (
+        trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf)(\([^)]+\))?:/) ||
+        (trimmed.length > 10 &&
+          trimmed.length < 100 &&
+          !trimmed.includes('---') &&
+          !trimmed.includes('Author:') &&
+          !trimmed.includes('Date:') &&
+          !/^[0-9a-f]{30,}/.test(trimmed) &&
+          !trimmed.startsWith('"') &&
+          !trimmed.startsWith('['))
+      ) {
+        cleaned = trimmed;
+        break;
+      }
+    }
+  }
+
+  // Si después del filtrado sigue siendo basura, usar un fallback genérico
+  if (/^[0-9a-f]{30,}/.test(cleaned) || cleaned.includes('Author:')) {
+    cleaned = 'chore: update code';
+    console.log('[LibreCommit] ⚠️ Modelo generó basura, usando fallback genérico');
+  }
+
   const countWords = (commitMsg: string): number => {
-    const match = commitMsg.match(/^(feat|fix|docs|style|refactor|test|chore|perf):\s*(.+)$/);
+    const match = commitMsg.match(
+      /^(feat|fix|docs|style|refactor|test|chore|perf)(\([^)]+\))?:\s*(.+)$/
+    );
     if (!match) return commitMsg.split(/\s+/).length;
-    return match[2].trim().split(/\s+/).length;
+    return match[3].trim().split(/\s+/).length;
   };
 
-  if (cleaned.match(/^(feat|fix|docs|style|refactor|test|chore|perf):/)) {
+  console.log('[LibreCommit] 📥 Received detectedChangeType:', detectedChangeType);
+
+  // Regex más flexible: acepta con o sin scope
+  const validFormatMatch = cleaned.match(
+    /^(feat|fix|docs|style|refactor|test|chore|perf)(\([^)]+\))?:\s*(.+)$/
+  );
+
+  if (validFormatMatch) {
     console.log('[LibreCommit] Modelo generó formato válido, usando directamente');
+
+    let [, currentType, scope, subject] = validFormatMatch;
+
+    console.log(
+      '[LibreCommit] 🔍 Checking correction: detectedChangeType=' +
+        detectedChangeType +
+        ', currentType=' +
+        currentType
+    );
+
+    // Forzar tipo correcto basado en detección de patrones
+    if (detectedChangeType === 'restored' && currentType !== 'fix') {
+      currentType = 'fix';
+      console.log('[LibreCommit] ✅ Tipo corregido a "fix" para código restaurado');
+    }
+
+    // Corregir verbo imperativo
+    subject = subject.replace(/\b(added|removed|updated|changed)\b/g, (match) => {
+      const imperativeMap: Record<string, string> = {
+        added: 'add',
+        removed: 'remove',
+        updated: 'update',
+        changed: 'change',
+      };
+      return imperativeMap[match] || match;
+    });
+
+    // Reconstruir el mensaje con tipo y verbo corregidos
+    cleaned = `${currentType}${scope || ''}: ${subject}`;
 
     const hasOnlyAdditions = addedLines.length > 0 && removedLines.length === 0;
     const hasOnlyRemovals = removedLines.length > 0 && addedLines.length === 0;
@@ -31,19 +117,44 @@ export async function processCommitMessage(
       console.log('[LibreCommit] Corregido: remove → add');
     }
   } else {
-    console.log('[LibreCommit] Modelo no generó formato válido, usando fallback simple');
-    cleaned = generateFallbackCommit(diff, addedLines, removedLines);
+    console.log('[LibreCommit] ⚠️ Modelo no generó formato válido, usando respuesta directa');
+    console.log('[LibreCommit] Respuesta: ', cleaned);
+
+    // Determinar tipo basado en detección de patrones
+    let defaultType = 'chore';
+    if (detectedChangeType === 'restored') {
+      defaultType = 'fix';
+    } else if (detectedChangeType === 'refactor') {
+      defaultType = 'refactor';
+    }
+
+    // Intentar agregar tipo si no tiene
+    if (!cleaned.match(/^[a-z]+:/)) {
+      cleaned = `${defaultType}: ${cleaned}`;
+      console.log(`[LibreCommit] Agregado prefijo "${defaultType}:" basado en detección`);
+    }
+
+    // Corregir verbo imperativo
+    cleaned = cleaned.replace(/\b(added|removed|updated|changed)\b/g, (match) => {
+      const imperativeMap: Record<string, string> = {
+        added: 'add',
+        removed: 'remove',
+        updated: 'update',
+        changed: 'change',
+      };
+      return imperativeMap[match] || match;
+    });
   }
 
   let wordCount = countWords(cleaned);
   console.log('[LibreCommit] Palabras en el mensaje:', wordCount);
 
-  if (wordCount < WORD_COUNT_LIMITS.min) {
+  // Solo expandir si está MUY corto (menos de 3 palabras)
+  // La expansión suele empeorar el mensaje, así que solo usarla cuando sea crítico
+  if (wordCount < 3) {
     cleaned = expandCommitMessage(cleaned, wordCount);
     wordCount = countWords(cleaned);
-  }
-
-  if (wordCount > WORD_COUNT_LIMITS.max) {
+  } else if (wordCount > WORD_COUNT_LIMITS.max) {
     cleaned = truncateCommitMessage(cleaned);
     wordCount = countWords(cleaned);
   }
@@ -53,51 +164,15 @@ export async function processCommitMessage(
   return cleaned;
 }
 
-function generateFallbackCommit(
-  diff: string,
-  addedLines: string[],
-  removedLines: string[]
-): string {
-  const hasJson = diff.includes('.json') || diff.includes('package.json');
-  const hasMd = diff.includes('.md') || diff.includes('README');
-  const hasHtml = diff.includes('.html');
-  const hasCss = diff.includes('.css');
-
-  let type = 'chore';
-  let description = 'update files with changes to improve project functionality';
-
-  if (hasJson) {
-    type = 'chore';
-    description = 'update configuration files with new project settings and dependencies';
-  } else if (hasMd) {
-    type = 'docs';
-    description = 'update documentation files to reflect latest project changes';
-  } else if (hasHtml) {
-    type = 'refactor';
-    description = 'update html structure and content to improve document layout';
-  } else if (hasCss) {
-    type = 'style';
-    description = 'update stylesheet styles to improve component visual appearance';
-  } else if (addedLines.length > removedLines.length * 2) {
-    type = 'feat';
-    description = 'add new functionality to extend application capabilities and features';
-  } else if (removedLines.length > addedLines.length * 2) {
-    type = 'refactor';
-    description = 'remove deprecated code to simplify codebase and reduce complexity';
-  } else {
-    type = 'refactor';
-    description = 'update implementation logic to improve code quality and maintainability';
-  }
-
-  return `${type}: ${description}`;
-}
-
-function expandCommitMessage(cleaned: string, wordCount: number): string {
-  const match = cleaned.match(/^(feat|fix|docs|style|refactor|test|chore|perf):\s*(.+)$/);
+function expandCommitMessage(cleaned: string, _wordCount: number): string {
+  const match = cleaned.match(
+    /^(feat|fix|docs|style|refactor|test|chore|perf)(\([^)]+\))?:\s*(.+)$/
+  );
   if (!match) return cleaned;
 
   const type = match[1];
-  let desc = match[2];
+  const scope = match[2] || '';
+  let desc = match[3];
 
   let expansion = '';
 
@@ -136,15 +211,18 @@ function expandCommitMessage(cleaned: string, wordCount: number): string {
   }
 
   desc = `${desc} ${expansion}`;
-  return `${type}: ${desc}`;
+  return `${type}${scope}: ${desc}`;
 }
 
 function truncateCommitMessage(cleaned: string): string {
-  const match = cleaned.match(/^(feat|fix|docs|style|refactor|test|chore|perf):\s*(.+)$/);
+  const match = cleaned.match(
+    /^(feat|fix|docs|style|refactor|test|chore|perf)(\([^)]+\))?:\s*(.+)$/
+  );
   if (!match) return cleaned;
 
   const type = match[1];
-  const words = match[2].trim().split(/\s+/);
+  const scope = match[2] || '';
+  const words = match[3].trim().split(/\s+/);
   const truncated = words.slice(0, WORD_COUNT_LIMITS.max).join(' ');
-  return `${type}: ${truncated}`;
+  return `${type}${scope}: ${truncated}`;
 }

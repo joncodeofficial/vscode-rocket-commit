@@ -1,7 +1,6 @@
 import { createServer, Server } from 'http';
-import * as vscode from 'vscode';
-import { HTTP_SERVER_PORT } from '../constants/config.mjs';
-import { ask, generateCommit, getModelName } from './modelService.mjs';
+import { HTTP_SERVER_PORT } from '../constants/config.js';
+import { ask, generateCommit, getModelName } from './modelService.js';
 
 let httpServer: Server | null = null;
 

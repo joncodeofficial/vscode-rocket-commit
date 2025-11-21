@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { generateCommit } from '../services/modelService.mjs';
-import { getWorkspaceRoot, getStagedDiff, writeToSourceControl } from '../services/gitService.mjs';
+import { generateCommit } from '../services/modelService.js';
+import { getWorkspaceRoot, getStagedDiff, writeToSourceControl } from '../services/gitService.js';
 
 export async function handleGenerateCommit(): Promise<void> {
   console.log('[LibreCommit] Comando generateCommit ejecutado');

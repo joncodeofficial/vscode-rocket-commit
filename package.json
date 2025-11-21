@@ -24,6 +24,7 @@
     "url": "https://github.com/joncodeofficial/vscode-console-warrior.git"
   },
   "publisher": "Jonpena",
+  "type": "module",
   "main": "./dist/extension.mjs",
   "scripts": {
     "compile": "tsc -p ./",
@@ -38,10 +39,6 @@
   },
   "contributes": {
     "commands": [
-      {
-        "command": "libre-commit.ask",
-        "title": "Libre Commit: Ask Model"
-      },
       {
         "command": "libre-commit.generateCommit",
         "title": "Generate Commit with AI",
