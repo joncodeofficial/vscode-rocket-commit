@@ -92,7 +92,7 @@ export function buildCommitPrompt(diff: string): {
 
   if (isUncommenting) {
     changeType = 'restored';
-    console.log('[LibreCommit] 🔍 Detected UNCOMMENT pattern - changeType=restored');
+    console.log('[RocketCommit] Detected UNCOMMENT pattern - changeType=restored');
   } else if (hasCommentedOldCode && hasNewImports && hasFunctionRewrite) {
     changeType = 'refactor';
   } else if (addedLines.length > removedLines.length * 2) {
@@ -101,7 +101,7 @@ export function buildCommitPrompt(diff: string): {
     changeType = 'removed';
   }
 
-  console.log('[LibreCommit] 🎯 Final changeType:', changeType);
+  console.log('[RocketCommit] Final changeType:', changeType);
 
   const prompt = `You are a commit message generator. Write descriptive conventional commit messages between 7-12 words.
 
@@ -161,8 +161,11 @@ ${changesSummary}
 
 commit:`;
 
-  console.log('[LibreCommit] Diff truncado (primeros 500 chars):', truncatedDiff.substring(0, 500));
-  console.log('[LibreCommit] Files detectados:', fileChanges);
+  console.log(
+    '[RocketCommit] Diff truncado (primeros 500 chars):',
+    truncatedDiff.substring(0, 500)
+  );
+  console.log('[RocketCommit] Files detectados:', fileChanges);
 
   return { prompt, addedLines, removedLines, changeType };
 }

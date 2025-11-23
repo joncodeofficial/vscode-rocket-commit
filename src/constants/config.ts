@@ -1,5 +1,5 @@
 /**
- * Configuration constants for the Libre Commit extension
+ * Configuration constants for the Rocket Commit extension
  */
 
 export const MODEL_URL =

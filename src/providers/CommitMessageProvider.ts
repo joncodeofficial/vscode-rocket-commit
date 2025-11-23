@@ -8,7 +8,7 @@ export class CommitMessageProvider {
     _token: vscode.CancellationToken
   ): Promise<string | undefined> {
     try {
-      console.log('[LibreCommit] Generando mensaje desde Source Control...');
+      console.log('[RocketCommit] Generando mensaje desde Source Control...');
 
       const diff = await getStagedDiff(repository.rootUri.fsPath);
 
@@ -17,7 +17,7 @@ export class CommitMessageProvider {
         return undefined;
       }
 
-      console.log('[LibreCommit] Diff obtenido, longitud:', diff.length);
+      console.log('[RocketCommit] Diff obtenido, longitud:', diff.length);
 
       const commitMessage = await vscode.window.withProgress(
         {
@@ -30,11 +30,11 @@ export class CommitMessageProvider {
         }
       );
 
-      console.log('[LibreCommit] Mensaje generado:', commitMessage);
+      console.log('[RocketCommit] Mensaje generado:', commitMessage);
 
       return commitMessage;
     } catch (error) {
-      console.error('[LibreCommit] Error generando mensaje:', error);
+      console.error('[RocketCommit] Error generando mensaje:', error);
       vscode.window.showErrorMessage(`Error al generar commit: ${(error as Error).message}`);
       return undefined;
     }

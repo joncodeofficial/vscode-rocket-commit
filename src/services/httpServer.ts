@@ -5,7 +5,7 @@ import { ask, generateCommit, getModelName } from './modelService.js';
 let httpServer: Server | null = null;
 
 export function startServer(): void {
-  console.log('[LibreCommit] Iniciando servidor HTTP...');
+  console.log('[RocketCommit] Iniciando servidor HTTP...');
 
   httpServer = createServer(async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
@@ -23,7 +23,7 @@ export function startServer(): void {
   });
 
   httpServer.listen(HTTP_SERVER_PORT, () => {
-    console.log(`[LibreCommit] Servidor HTTP escuchando en puerto ${HTTP_SERVER_PORT}`);
+    console.log(`[RocketCommit] Servidor HTTP escuchando en puerto ${HTTP_SERVER_PORT}`);
   });
 }
 
@@ -46,12 +46,12 @@ async function handleAskRequest(req: any, res: any): Promise<void> {
         return;
       }
 
-      console.log('[LibreCommit] Pregunta recibida:', question);
+      console.log('[RocketCommit] Pregunta recibida:', question);
       const start = Date.now();
       const answer = await ask(question);
       const time = ((Date.now() - start) / 1000).toFixed(2);
 
-      console.log('[LibreCommit] Respuesta generada en', time, 's');
+      console.log('[RocketCommit] Respuesta generada en', time, 's');
       res.end(
         JSON.stringify({
           answer,
@@ -60,7 +60,7 @@ async function handleAskRequest(req: any, res: any): Promise<void> {
         })
       );
     } catch (error: unknown) {
-      console.error('[LibreCommit] Error en /ask:', error);
+      console.error('[RocketCommit] Error en /ask:', error);
       res.writeHead(500);
       res.end(JSON.stringify({ error: (error as Error).message }));
     }
@@ -79,12 +79,12 @@ async function handleCommitRequest(req: any, res: any): Promise<void> {
         return;
       }
 
-      console.log('[LibreCommit] Generando commit para diff de', diff.length, 'caracteres');
+      console.log('[RocketCommit] Generando commit para diff de', diff.length, 'caracteres');
       const start = Date.now();
       const message = await generateCommit(diff);
       const time = ((Date.now() - start) / 1000).toFixed(2);
 
-      console.log('[LibreCommit] Commit generado en', time, 's:', message);
+      console.log('[RocketCommit] Commit generado en', time, 's:', message);
       res.end(
         JSON.stringify({
           message,
@@ -93,7 +93,7 @@ async function handleCommitRequest(req: any, res: any): Promise<void> {
         })
       );
     } catch (error: unknown) {
-      console.error('[LibreCommit] Error en /commit:', error);
+      console.error('[RocketCommit] Error en /commit:', error);
       res.writeHead(500);
       res.end(JSON.stringify({ error: (error as Error).message }));
     }

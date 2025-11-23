@@ -3,7 +3,7 @@ import { generateCommit } from '../services/modelService.js';
 import { getWorkspaceRoot, getStagedDiff, writeToSourceControl } from '../services/gitService.js';
 
 export async function handleGenerateCommit(): Promise<void> {
-  console.log('[LibreCommit] Comando generateCommit ejecutado');
+  console.log('[RocketCommit] Comando generateCommit ejecutado');
 
   const root = await getWorkspaceRoot();
   if (!root) {
@@ -11,7 +11,7 @@ export async function handleGenerateCommit(): Promise<void> {
     return;
   }
 
-  console.log('[LibreCommit] Workspace root:', root);
+  console.log('[RocketCommit] Workspace root:', root);
 
   let diff = '';
   try {
@@ -26,7 +26,7 @@ export async function handleGenerateCommit(): Promise<void> {
     return;
   }
 
-  console.log('[LibreCommit] Diff obtenido, longitud:', diff.length);
+  console.log('[RocketCommit] Diff obtenido, longitud:', diff.length);
 
   try {
     const commitMessage = await vscode.window.withProgress(
@@ -39,13 +39,13 @@ export async function handleGenerateCommit(): Promise<void> {
       }
     );
 
-    console.log('[LibreCommit] Mensaje generado:', commitMessage);
+    console.log('[RocketCommit] Mensaje generado:', commitMessage);
 
     await writeToSourceControl(commitMessage);
 
-    console.log('[LibreCommit] Mensaje escrito en Source Control');
+    console.log('[RocketCommit] Mensaje escrito en Source Control');
   } catch (error) {
-    console.error('[LibreCommit] Error:', error);
+    console.error('[RocketCommit] Error:', error);
     vscode.window.showErrorMessage(`Error generando commit: ${(error as Error).message}`);
   }
 }

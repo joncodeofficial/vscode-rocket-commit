@@ -14,7 +14,7 @@ export async function downloadModelWithProgress(
     mkdirSync(destDir, { recursive: true });
   }
 
-  console.log('[LibreCommit] Iniciando descarga del modelo desde:', url);
+  console.log('[RocketCommit] Iniciando descarga del modelo desde:', url);
 
   const response = await fetch(url);
 
@@ -25,7 +25,7 @@ export async function downloadModelWithProgress(
   const totalBytes = parseInt(response.headers.get('content-length') || '0', 10);
   let downloadedBytes = 0;
 
-  console.log('[LibreCommit] Tamaño del modelo:', (totalBytes / 1024 / 1024).toFixed(2), 'MB');
+  console.log('[RocketCommit] Tamaño del modelo:', (totalBytes / 1024 / 1024).toFixed(2), 'MB');
 
   const reader = response.body!.getReader();
   const writer = createWriteStream(destPath);
@@ -60,6 +60,6 @@ export async function downloadModelWithProgress(
     })();
   });
 
-  console.log('[LibreCommit] Descarga completada. Archivo guardado en:', destPath);
+  console.log('[RocketCommit] Descarga completada. Archivo guardado en:', destPath);
   progress.report({ message: 'Descarga completada!' });
 }

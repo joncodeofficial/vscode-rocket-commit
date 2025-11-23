@@ -9,11 +9,11 @@ export async function processCommitMessage(
 ): Promise<string> {
   let cleaned = rawMessage.trim();
 
-  // Limpiar basura que el modelo a veces genera
+  // Clean up garbage that the model sometimes generates
   const messageLines = cleaned.split('\n');
   cleaned = messageLines[0].trim();
 
-  // Filtrar líneas que son claramente basura (git hashes, metadata, etc.)
+  // Filter lines that are clearly garbage (git hashes, metadata, etc.)
   const isGarbage =
     cleaned.includes('---') ||
     cleaned.includes('REVIEW') ||
@@ -31,11 +31,11 @@ export async function processCommitMessage(
     /^[0-9a-f]{32,40}/.test(cleaned); // SHA parcial
 
   if (isGarbage) {
-    // Buscar la primera línea válida
+    // Find the first valid line
     for (const line of messageLines) {
       const trimmed = line.trim();
 
-      // Validar que sea un commit válido o al menos texto útil
+      // Validate that it's a valid commit or at least useful text
       if (
         trimmed.match(/^(feat|fix|docs|style|refactor|test|chore|perf)(\([^)]+\))?:/) ||
         (trimmed.length > 10 &&
@@ -53,10 +53,10 @@ export async function processCommitMessage(
     }
   }
 
-  // Si después del filtrado sigue siendo basura, usar un fallback genérico
+  // If after filtering it's still garbage, use a generic fallback
   if (/^[0-9a-f]{30,}/.test(cleaned) || cleaned.includes('Author:')) {
     cleaned = 'chore: update code';
-    console.log('[LibreCommit] ⚠️ Modelo generó basura, usando fallback genérico');
+    console.log('[Commit] Model generated garbage, using generic fallback');
   }
 
   const countWords = (commitMsg: string): number => {
@@ -67,32 +67,32 @@ export async function processCommitMessage(
     return match[3].trim().split(/\s+/).length;
   };
 
-  console.log('[LibreCommit] 📥 Received detectedChangeType:', detectedChangeType);
+  console.log('[RocketCommit] Received detectedChangeType:', detectedChangeType);
 
-  // Regex más flexible: acepta con o sin scope
+  // More flexible regex: accepts with or without scope
   const validFormatMatch = cleaned.match(
     /^(feat|fix|docs|style|refactor|test|chore|perf)(\([^)]+\))?:\s*(.+)$/
   );
 
   if (validFormatMatch) {
-    console.log('[LibreCommit] Modelo generó formato válido, usando directamente');
+    console.log('[RocketCommit] Model generated valid format, using directly');
 
     let [, currentType, scope, subject] = validFormatMatch;
 
     console.log(
-      '[LibreCommit] 🔍 Checking correction: detectedChangeType=' +
+      '[RocketCommit] Checking correction: detectedChangeType=' +
         detectedChangeType +
         ', currentType=' +
         currentType
     );
 
-    // Forzar tipo correcto basado en detección de patrones
+    // Force correct type based on pattern detection
     if (detectedChangeType === 'restored' && currentType !== 'fix') {
       currentType = 'fix';
-      console.log('[LibreCommit] ✅ Tipo corregido a "fix" para código restaurado');
+      console.log('[RocketCommit] Type corrected to "fix" for restored code');
     }
 
-    // Corregir verbo imperativo
+    // Fix imperative verb
     subject = subject.replace(/\b(added|removed|updated|changed)\b/g, (match) => {
       const imperativeMap: Record<string, string> = {
         added: 'add',
@@ -103,7 +103,7 @@ export async function processCommitMessage(
       return imperativeMap[match] || match;
     });
 
-    // Reconstruir el mensaje con tipo y verbo corregidos
+    // Rebuild the message with corrected type and verb
     cleaned = `${currentType}${scope || ''}: ${subject}`;
 
     const hasOnlyAdditions = addedLines.length > 0 && removedLines.length === 0;
@@ -111,16 +111,16 @@ export async function processCommitMessage(
 
     if (hasOnlyRemovals && cleaned.includes('add ') && !cleaned.includes('remove')) {
       cleaned = cleaned.replace(/\badd\b/g, 'remove');
-      console.log('[LibreCommit] Corregido: add → remove');
+      console.log('[RocketCommit] Corrected: add to remove');
     } else if (hasOnlyAdditions && cleaned.includes('remove ') && !cleaned.includes('add')) {
       cleaned = cleaned.replace(/\bremove\b/g, 'add');
-      console.log('[LibreCommit] Corregido: remove → add');
+      console.log('[RocketCommit] Corrected: remove to add');
     }
   } else {
-    console.log('[LibreCommit] ⚠️ Modelo no generó formato válido, usando respuesta directa');
-    console.log('[LibreCommit] Respuesta: ', cleaned);
+    console.log('[RocketCommit] Model did not generate valid format, using direct response');
+    console.log('[RocketCommit] Response: ', cleaned);
 
-    // Determinar tipo basado en detección de patrones
+    // Determine type based on pattern detection
     let defaultType = 'chore';
     if (detectedChangeType === 'restored') {
       defaultType = 'fix';
@@ -128,13 +128,13 @@ export async function processCommitMessage(
       defaultType = 'refactor';
     }
 
-    // Intentar agregar tipo si no tiene
+    // Try to add type if it doesn't have one
     if (!cleaned.match(/^[a-z]+:/)) {
       cleaned = `${defaultType}: ${cleaned}`;
-      console.log(`[LibreCommit] Agregado prefijo "${defaultType}:" basado en detección`);
+      console.log(`[RocketCommit] Added prefix "${defaultType}:" based on detection`);
     }
 
-    // Corregir verbo imperativo
+    // Fix imperative verb
     cleaned = cleaned.replace(/\b(added|removed|updated|changed)\b/g, (match) => {
       const imperativeMap: Record<string, string> = {
         added: 'add',
@@ -147,10 +147,10 @@ export async function processCommitMessage(
   }
 
   let wordCount = countWords(cleaned);
-  console.log('[LibreCommit] Palabras en el mensaje:', wordCount);
+  console.log('[RocketCommit] Words in message:', wordCount);
 
-  // Solo expandir si está MUY corto (menos de 3 palabras)
-  // La expansión suele empeorar el mensaje, así que solo usarla cuando sea crítico
+  // Only expand if it's VERY short (less than 3 words)
+  // Expansion usually makes the message worse, so only use it when critical
   if (wordCount < 3) {
     cleaned = expandCommitMessage(cleaned, wordCount);
     wordCount = countWords(cleaned);
@@ -159,7 +159,7 @@ export async function processCommitMessage(
     wordCount = countWords(cleaned);
   }
 
-  console.log('[LibreCommit] Mensaje final con', wordCount, 'palabras:', cleaned);
+  console.log('[RocketCommit] Final message with', wordCount, 'words:', cleaned);
 
   return cleaned;
 }

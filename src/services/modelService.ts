@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { getLlama, LlamaContext, LlamaModel, LlamaCompletion } from 'node-llama-cpp';
 import { existsSync } from 'fs';
 import { MODEL_URL, MODEL_CONFIG, MODEL_NAME } from '../constants/config.js';
-import { downloadModelWithProgress } from '../utils/download.mjs';
+import { downloadModelWithProgress } from '../utils/download.js';
 
 let model: LlamaModel | null = null;
 let context: LlamaContext | null = null;
@@ -10,11 +10,11 @@ let contextSequence: any = null;
 
 export async function initModel(modelPath: string): Promise<void> {
   if (!existsSync(modelPath)) {
-    console.log('[LibreCommit] Modelo no encontrado. Iniciando descarga...');
+    console.log('[RocketCommit] Modelo no encontrado. Iniciando descarga...');
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'Libre Commit',
+        title: 'Rocket Commit',
         cancellable: false,
       },
       async (progress) => {
@@ -22,20 +22,20 @@ export async function initModel(modelPath: string): Promise<void> {
       }
     );
   } else {
-    console.log('[LibreCommit] Modelo ya descargado en:', modelPath);
+    console.log('[RocketCommit] Modelo ya descargado en:', modelPath);
   }
 
-  console.log('[LibreCommit] Cargando modelo en memoria...');
+  console.log('[RocketCommit] Cargando modelo en memoria...');
   const llama = await getLlama();
   model = await llama.loadModel({
     modelPath: modelPath,
   });
 
-  console.log('[LibreCommit] Creando contexto con modelo Base (completion mode)...');
+  console.log('[RocketCommit] Creando contexto con modelo Base (completion mode)...');
   context = await model.createContext();
   contextSequence = context.getSequence();
 
-  console.log('[LibreCommit] Modelo cargado exitosamente!');
+  console.log('[RocketCommit] Modelo cargado exitosamente!');
 }
 
 export async function ask(question: string): Promise<string> {
@@ -62,10 +62,10 @@ export async function generateCommit(diff: string): Promise<string> {
   if (!contextSequence || !model) throw new Error('Modelo no inicializado');
 
   const { prompt, addedLines, removedLines, changeType } = await import(
-    '../utils/promptBuilder.mjs'
+    '../utils/promptBuilder.js'
   ).then((m) => m.buildCommitPrompt(diff));
 
-  console.log('[LibreCommit] Prompt enviado al modelo:');
+  console.log('[RocketCommit] Prompt enviado al modelo:');
 
   await contextSequence.clearHistory();
 
@@ -75,9 +75,9 @@ export async function generateCommit(diff: string): Promise<string> {
 
   const message = await completion.generateCompletion(prompt, MODEL_CONFIG);
 
-  console.log('[LibreCommit] Respuesta raw del modelo:', message);
+  console.log('[RocketCommit] Respuesta raw del modelo:', message);
 
-  const { processCommitMessage } = await import('../utils/commitProcessor.mjs');
+  const { processCommitMessage } = await import('../utils/commitProcessor.js');
   const cleaned = await processCommitMessage(message, diff, addedLines, removedLines, changeType);
 
   return cleaned;
