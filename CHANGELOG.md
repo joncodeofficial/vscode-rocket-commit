@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## <small>1.0.1 (2025-11-23)</small>
+
+- fix: remove console debugging ([82643e6](https://github.com/joncodeofficial/vscode-rocket-commit/commit/82643e6))
+- fix: remove console.log debugging ([58623e8](https://github.com/joncodeofficial/vscode-rocket-commit/commit/58623e8))
+
 ## 1.0.0 (2025-11-23)
 
 - chore: new package-lock ([2109ab0](https://github.com/joncodeofficial/vscode-rocket-commit/commit/2109ab0))
