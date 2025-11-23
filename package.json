@@ -1,7 +1,7 @@
 {
   "name": "rocket-commit",
   "displayName": "Rocket Commit",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "AI-powered commit message generator using local LLM. Generates conventional commits offline with complete privacy - no API keys, no cloud, no data sharing.",
   "categories": [
     "SCM Providers",

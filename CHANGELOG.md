@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## <small>1.0.3 (2025-11-23)</small>
+
+- fix: update package.json ([138dc71](https://github.com/joncodeofficial/vscode-rocket-commit/commit/138dc71))
+
 ## <small>1.0.2 (2025-11-23)</small>
 
 - fix: avoid heavy files ([af3aad3](https://github.com/joncodeofficial/vscode-rocket-commit/commit/af3aad3))
