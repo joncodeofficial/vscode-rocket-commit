@@ -26,7 +26,12 @@ export async function initModel(modelPath: string): Promise<void> {
   }
 
   console.log('[RocketCommit] Cargando modelo en memoria...');
-  const llama = await getLlama();
+  const llama = await getLlama({
+    build: 'never',
+    gpu: 'auto',
+    usePrebuiltBinaries: true,
+    skipDownload: true,
+  });
   model = await llama.loadModel({
     modelPath: modelPath,
   });
