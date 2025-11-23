@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## <small>1.0.4 (2025-11-23)</small>
+
+- fix: add llama model with gpu and prebuilt binaries ([b27a47d](https://github.com/joncodeofficial/vscode-rocket-commit/commit/b27a47d))
+
 ## <small>1.0.3 (2025-11-23)</small>
 
 - fix: update package.json ([138dc71](https://github.com/joncodeofficial/vscode-rocket-commit/commit/138dc71))
