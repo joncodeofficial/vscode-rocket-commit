@@ -1,6 +1,6 @@
 {
-  "name": "libre-commit",
-  "displayName": "Libre Commit",
+  "name": "rocket-commit",
+  "displayName": "Rocket Commit",
   "version": "1.0.0",
   "description": "Visualize console messages (log, warn, error) directly in VSCode editor inline, boosting debugging and productivity.",
   "categories": [
@@ -15,17 +15,17 @@
     "visualization",
     "inline logs"
   ],
-  "homepage": "https://github.com/joncodeofficial/vscode-libre-commit#readme",
+  "homepage": "https://github.com/joncodeofficial/vscode-rocket-commit#readme",
   "bugs": {
-    "url": "https://github.com/joncodeofficial/vscode-libre-commit/issues"
+    "url": "https://github.com/joncodeofficial/vscode-rocket-commit/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/joncodeofficial/vscode-libre-commit.git"
+    "url": "https://github.com/joncodeofficial/vscode-rocket-commit.git"
   },
   "publisher": "Jonpena",
   "type": "module",
-  "main": "./dist/extension.mjs",
+  "main": "./dist/extension.js",
   "scripts": {
     "compile": "tsc -p ./",
     "format": "prettier --write --ignore-unknown src",
@@ -40,7 +40,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "libre-commit.generateCommit",
+        "command": "rocket-commit.generateCommit",
         "title": "Generate Commit with AI",
         "icon": "$(rocket)"
       }
@@ -48,7 +48,7 @@
     "menus": {
       "scm/title": [
         {
-          "command": "libre-commit.generateCommit",
+          "command": "rocket-commit.generateCommit",
           "group": "navigation",
           "when": "scmProvider == git"
         }
