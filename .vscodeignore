@@ -1,3 +1,4 @@
+# Development files
 .vscode/**
 .vscode-test/**
 src/**
@@ -10,15 +11,62 @@ vsc-extension-quickstart.md
 **/*.ts
 **/.vscode-test.*
 
-# Ignorar tests de TypeScript
+# Tests
 src/test/**
 src/types/**
-
-# Ignorar tests compilados
 dist/test/**
 dist/types/**
-**/images/presentation.gif
-**/commitlint.config.js
+
+# Build and CI/CD
+.github/**
 **/.releaserc.json
-**/.prettierignore
 **/semantic.log
+**/.prettierignore
+**/commitlint.config.cjs
+commitlint.config.cjs
+**/.claude/**
+
+# Documentation and media
+**/images/presentation.gif
+CLAUDE.md
+.DS_Store
+
+# Dependencies - exclude dev dependencies
+node_modules/@types/**
+node_modules/@semantic-release/**
+node_modules/@commitlint/**
+node_modules/@vscode/test-*/**
+node_modules/@typescript-eslint/**
+node_modules/eslint/**
+node_modules/prettier/**
+node_modules/lint-staged/**
+node_modules/simple-git-hooks/**
+node_modules/sort-package-json/**
+node_modules/typescript/**
+node_modules/mocha/**
+node_modules/@vscode/test-cli/**
+node_modules/@vscode/test-electron/**
+
+# node-llama-cpp - exclude binaries for unsupported platforms (keep mac-arm64 and win32 only)
+node_modules/@node-llama-cpp/linux-*/**
+node_modules/@node-llama-cpp/mac-x64*/**
+
+# Unnecessary files in dependencies
+**/test/**
+**/tests/**
+**/*.test.js
+**/*.spec.js
+**/__tests__/**
+**/__mocks__/**
+node_modules/**/README.md
+node_modules/**/readme.md
+node_modules/**/CHANGELOG.md
+node_modules/**/changelog.md
+node_modules/**/LICENSE
+node_modules/**/LICENSE.txt
+node_modules/**/license
+**/.npmignore
+node_modules/**/.gitignore
+**/.eslintrc*
+**/.prettierrc*
+node_modules/**/tsconfig.json
