@@ -11,7 +11,6 @@ export async function activate(context: vscode.ExtensionContext) {
   const modelDir = path.join(context.globalStorageUri.fsPath, 'models');
   const modelPath = path.join(modelDir, MODEL_FILENAME);
 
-  console.log('[RocketCommit] Directorio de modelos:', modelDir);
   console.log('[RocketCommit] Ruta del modelo:', modelPath);
 
   try {
