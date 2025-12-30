@@ -86,40 +86,53 @@ export async function processCommitMessage(
         currentType
     );
 
-    // Force correct type based on pattern detection
+    // Force correct type based on pattern detection (only for critical cases)
     if (detectedChangeType === 'restored' && currentType !== 'fix') {
       currentType = 'fix';
       console.log('[RocketCommit] Type corrected to "fix" for restored code');
     }
 
-    // Fix imperative verb
-    subject = subject.replace(/\b(added|removed|updated|changed)\b/g, (match) => {
-      const imperativeMap: Record<string, string> = {
-        added: 'add',
-        removed: 'remove',
-        updated: 'update',
-        changed: 'change',
-      };
-      return imperativeMap[match] || match;
-    });
+    // LFM2 optimized: Trust model more, only fix obvious past tense errors
+    // The improved prompt should handle imperative mood correctly
+    const hasPastTenseError = /\b(added|removed|updated|changed|fixed)\b/.test(subject);
+    if (hasPastTenseError) {
+      console.log('[RocketCommit] Past tense detected, correcting to imperative');
+      subject = subject.replace(/\b(added|removed|updated|changed|fixed)\b/g, (match) => {
+        const imperativeMap: Record<string, string> = {
+          added: 'add',
+          removed: 'remove',
+          updated: 'update',
+          changed: 'change',
+          fixed: 'fix',
+        };
+        return imperativeMap[match] || match;
+      });
+    }
 
     // Rebuild the message with corrected type and verb
     cleaned = `${currentType}${scope || ''}: ${subject}`;
 
+    // LFM2 optimized: Only correct direction in extreme cases
+    // Trust that the improved prompt makes the model more accurate
     const hasOnlyAdditions = addedLines.length > 0 && removedLines.length === 0;
     const hasOnlyRemovals = removedLines.length > 0 && addedLines.length === 0;
 
-    if (hasOnlyRemovals && cleaned.includes('add ') && !cleaned.includes('remove')) {
+    const hasAddVerb = /\badd\b/i.test(cleaned);
+    const hasRemoveVerb = /\bremove\b/i.test(cleaned);
+
+    // Only correct if there's a clear contradiction
+    if (hasOnlyRemovals && hasAddVerb && !hasRemoveVerb) {
+      console.log('[RocketCommit] Clear contradiction: only removals but says "add"');
       cleaned = cleaned.replace(/\badd\b/g, 'remove');
-      console.log('[RocketCommit] Corrected: add to remove');
-    } else if (hasOnlyAdditions && cleaned.includes('remove ') && !cleaned.includes('add')) {
+    } else if (hasOnlyAdditions && hasRemoveVerb && !hasAddVerb) {
+      console.log('[RocketCommit] Clear contradiction: only additions but says "remove"');
       cleaned = cleaned.replace(/\bremove\b/g, 'add');
-      console.log('[RocketCommit] Corrected: remove to add');
     }
   } else {
     console.log('[RocketCommit] Model did not generate valid format, using direct response');
     console.log('[RocketCommit] Response: ', cleaned);
 
+    // LFM2 optimized: With better prompt, this should rarely happen
     // Determine type based on pattern detection
     let defaultType = 'chore';
     if (detectedChangeType === 'restored') {
@@ -134,16 +147,21 @@ export async function processCommitMessage(
       console.log(`[RocketCommit] Added prefix "${defaultType}:" based on detection`);
     }
 
-    // Fix imperative verb
-    cleaned = cleaned.replace(/\b(added|removed|updated|changed)\b/g, (match) => {
-      const imperativeMap: Record<string, string> = {
-        added: 'add',
-        removed: 'remove',
-        updated: 'update',
-        changed: 'change',
-      };
-      return imperativeMap[match] || match;
-    });
+    // LFM2 optimized: Only fix past tense if present
+    const hasPastTenseError = /\b(added|removed|updated|changed|fixed)\b/.test(cleaned);
+    if (hasPastTenseError) {
+      console.log('[RocketCommit] Past tense in fallback path, correcting');
+      cleaned = cleaned.replace(/\b(added|removed|updated|changed|fixed)\b/g, (match) => {
+        const imperativeMap: Record<string, string> = {
+          added: 'add',
+          removed: 'remove',
+          updated: 'update',
+          changed: 'change',
+          fixed: 'fix',
+        };
+        return imperativeMap[match] || match;
+      });
+    }
   }
 
   let wordCount = countWords(cleaned);

@@ -103,60 +103,96 @@ export function buildCommitPrompt(diff: string): {
 
   console.log('[RocketCommit] Final changeType:', changeType);
 
-  const prompt = `You are a commit message generator. Write descriptive conventional commit messages between 7-12 words.
+  const prompt = `You are a commit message generator. Generate conventional commit messages with 7-12 words.
 
-Rules:
-- Use types: feat, fix, refactor, style, chore, perf, docs, test
-- When numbers change (array sizes, counts), use "perf:" and mention FROM → TO
-- "+" means ADDED, "-" means REMOVED - be accurate!
-- Describe ONLY what changed, don't invent why or intentions
-- For console.log/debug: use "chore:" or "debug:" and say "for debugging"
-- No parentheses/scopes, format: "type: descriptive message"
+RULES (follow exactly):
+1. Format must be: type: descriptive message
+   - Valid types ONLY: feat, fix, refactor, style, chore, perf, docs, test
+   - NO parentheses, NO scopes
+   - Good: "feat: add user authentication system"
+   - Bad: "feat(auth): add login" (has scope)
 
-Examples:
+2. Word count: 7-12 words after the colon
 
-diff --git a/src/Scene.jsx b/src/Scene.jsx
+3. Use imperative mood: add, remove, update (NOT added, removed, updated)
+
+4. "+" lines mean ADDED, "-" lines mean REMOVED - be accurate
+
+5. For number changes: use "perf:" and mention from X to Y
+
+6. For console.log: use "chore:" and say "for debugging"
+
+7. Describe only what changed, not why
+
+### EXAMPLES ###
+
+Input:
+diff --git a/src/Scene.jsx
 -  new Float32Array(1000)
 +  new Float32Array(300)
-commit: perf: reduce float array size from 1000 to 300 items
+Output: perf: reduce float array size from 1000 to 300 items
 
-diff --git a/package.json b/package.json
+Input:
+diff --git a/package.json
 +  "packageManager": "pnpm@9.0.0"
 -    "dev": "vite --open"
 +    "dev": "vite"
-commit: chore: add pnpm package manager and remove vite open flag
+Output: chore: add pnpm package manager and remove vite open flag
 
-diff --git a/src/App.jsx b/src/App.jsx
+Input:
+diff --git a/src/App.jsx
 +  console.log('debug message');
-commit: chore: add temporary console log statement for debugging purposes
+Output: chore: add temporary console log statement for debugging purposes
 
-diff --git a/src/Button.tsx b/src/Button.tsx
+Input:
+diff --git a/src/Button.tsx
 -  const iconSize = 20;
 +  const iconSize = 16;
-commit: perf: reduce icon size from 20 to 16 pixels
+Output: perf: reduce icon size from 20 to 16 pixels
 
-diff --git a/index.html b/index.html
+Input:
+diff --git a/index.html
 -  <meta name="apple-mobile-web-app-capable" content="yes">
-commit: refactor: remove apple mobile web app capable meta tag
+Output: refactor: remove apple mobile web app capable meta tag
 
-diff --git a/src/api/users.ts b/src/api/users.ts
+Input:
+diff --git a/src/api/users.ts
 +  async function fetchUserById(id: string) {
 +    return await fetch(\`/api/users/\${id}\`);
 +  }
-commit: feat: add async function to fetch user data by id
+Output: feat: add async function to fetch user data by id
 
-diff --git a/src/services/viewer.ts b/src/services/viewer.ts
+Input:
+diff --git a/src/services/viewer.ts
 -// export async function loadModelViewable(
 -//   viewer: Autodesk.Viewing.Viewer3D,
 +export async function loadModelViewable(
 +  viewer: Autodesk.Viewing.Viewer3D,
-commit: fix: restore loadModelViewable function for caching documents
+Output: fix: restore loadModelViewable function for caching documents
 
-Now generate a commit for this diff (${changeType}):
+Input:
+diff --git a/src/utils/helpers.ts
++import { formatDate } from 'date-fns';
++import { logger } from './logger';
++
++export function logFormattedDate(date: Date) {
++  logger.info(formatDate(date, 'yyyy-MM-dd'));
++}
+Output: feat: add date formatting utility with logging support function
+
+Input:
+diff --git a/README.md
+-## Installation
+-Run npm install
++## Setup
++Run pnpm install to get started
+Output: docs: update installation instructions to use pnpm instead of npm
+
+Now generate a commit message for this diff:
 
 Files: ${fileSummary}
+Change type: ${changeType}
 
-Changes:
 ${changesSummary}
 
 commit:`;
