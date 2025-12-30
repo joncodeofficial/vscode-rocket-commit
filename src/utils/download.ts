@@ -7,7 +7,7 @@ export async function downloadModelWithProgress(
   destPath: string,
   progress: vscode.Progress<{ message?: string; increment?: number }>
 ): Promise<void> {
-  progress.report({ message: 'Descargando Qwen2.5-Coder 1.5B Base Q4_K_M (~1.1 GB)...' });
+  progress.report({ message: 'Downloading model...' });
 
   const destDir = path.dirname(destPath);
   if (!existsSync(destDir)) {

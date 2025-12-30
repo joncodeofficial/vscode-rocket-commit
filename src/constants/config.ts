@@ -3,11 +3,11 @@
  */
 
 export const MODEL_URL =
-  'https://huggingface.co/mradermacher/Qwen2.5-Coder-1.5B-GGUF/resolve/main/Qwen2.5-Coder-1.5B.Q4_K_M.gguf';
+  'https://huggingface.co/LiquidAI/LFM2-2.6B-Exp-GGUF/resolve/main/LFM2-2.6B-Exp-Q4_K_M.gguf';
 
-export const MODEL_NAME = 'Qwen2.5-Coder-1.5B-Base-Q4_K_M';
+export const MODEL_NAME = 'LFM2-2.6B-Exp-Q4_K_M';
 
-export const MODEL_FILENAME = 'qwen2.5-coder-1.5b-base-q4_k_m.gguf';
+export const MODEL_FILENAME = 'lfm2-2.6b-exp-q4_k_m.gguf';
 
 export const HTTP_SERVER_PORT = 7001;
 
