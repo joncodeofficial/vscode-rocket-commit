@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.0 (2025-12-30)
+
+- feat: new model LMF2 ([6c38ddb](https://github.com/joncodeofficial/vscode-rocket-commit/commit/6c38ddb))
+- chore: update LLM to LMF2 2.6b-exp ([c29b88d](https://github.com/joncodeofficial/vscode-rocket-commit/commit/c29b88d))
+
 ## <small>1.0.4 (2025-11-23)</small>
 
 - fix: add llama model with gpu and prebuilt binaries ([b27a47d](https://github.com/joncodeofficial/vscode-rocket-commit/commit/b27a47d))
